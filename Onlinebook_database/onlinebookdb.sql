@@ -157,3 +157,74 @@ WHERE customer_id IN (
 SELECT title, price,
        DENSE_RANK() OVER (ORDER BY price DESC) AS price_rank
 FROM books;
+
+-- =========================================================
+-- FILE NAME: advanced_window_functions.sql
+-- PURPOSE   : Advanced SQL Window Functions Practice Queries
+-- DATABASE  : online_bookstore
+-- =========================================================
+
+-- =========================================================
+-- 1. ROW_NUMBER() FUNCTION
+-- =========================================================
+
+-- စာအုပ်များကို ဈေးနှုန်းအကြီးဆုံးမှ အသေးဆုံးသို့ စီပြီး စဉ်លេខ (Row Number) ထည့်ခြင်း
+SELECT 
+    ROW_NUMBER() OVER (ORDER BY price DESC) AS row_num,
+    title, 
+    price
+FROM books;
+
+
+-- =========================================================
+-- 2. RANK() & DENSE_RANK() FUNCTIONS
+-- =========================================================
+
+-- စာအုပ်ဈေးနှုန်းများကို Rank နှင့် Dense Rank ဖြင့် အဆင့်သတ်မှတ်ခြင်း
+SELECT 
+    title, 
+    price,
+    RANK() OVER (ORDER BY price DESC) AS price_rank,
+    DENSE_RANK() OVER (ORDER BY price DESC) AS price_dense_rank
+FROM books;
+
+
+-- =========================================================
+-- 3. PARTITION BY WITH WINDOW FUNCTIONS
+-- =========================================================
+
+-- အမျိုးအစား (Category) တစ်ခုချင်းစီအလိုက် စာအုပ်များကို ဈေးအကြီးဆုံးမှ အသေးဆုံး အဆင့်သတ်မှတ်ခြင်း
+SELECT 
+    c.category_name,
+    b.title,
+    b.price,
+    ROW_NUMBER() OVER (PARTITION BY b.category_id ORDER BY b.price DESC) AS category_row_num
+FROM books b
+INNER JOIN categories c ON b.category_id = c.category_id;
+
+
+-- =========================================================
+-- 4. AGGREGATE WINDOW FUNCTIONS (SUM, AVG)
+-- =========================================================
+
+-- စာအုပ်အမျိုးအစား အလိုက် စုစုပေါင်း Stock ပမာဏနှင့် ပျမ်းမျှဈေးနှုန်းကို တန်းစီဖော်ပြခြင်း
+SELECT 
+    title,
+    category_id,
+    price,
+    SUM(stock_quantity) OVER (PARTITION BY category_id) AS category_total_stock,
+    AVG(price) OVER (PARTITION BY category_id) AS category_avg_price
+FROM books;
+
+
+-- =========================================================
+-- 5. LEAD() & LAG() FUNCTIONS
+-- =========================================================
+
+-- ယခင်စာအုပ်ဈေးနှုန်းနှင့် နောက်စာအုပ်ဈေးနှုန်းတို့ကို နှိုင်းယှဉ်ထုတ်ယူခြင်း
+SELECT 
+    title,
+    price,
+    LAG(price, 1) OVER (ORDER BY price DESC) AS higher_price_neighbor,
+    LEAD(price, 1) OVER (ORDER BY price DESC) AS lower_price_neighbor
+FROM books;
